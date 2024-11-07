@@ -1,0 +1,10 @@
+globals:
+  repository_name: aws-cdk-k8s
+  pipeline_branch_name: main
+  instance_type: t3.medium
+  project_tags:
+    created_by: me
+
+accounts:
+  - account_name: nonprod
+    region: us-east-1
