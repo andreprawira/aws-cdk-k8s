@@ -10,7 +10,7 @@ import cdk8s as cdk8s
 from constructs import Construct
 from dataclasses import dataclass
 
-from app_stacks.ascalon_stack import MyChart
+from app_manifests.deployment import Deployment
 
 
 @dataclass
@@ -66,7 +66,7 @@ class EKSStack(Stack):
         bucket = s3.Bucket(self, "Bucket")
 
         # create a cdk8s chart and use `cdk8s.App` as the scope.
-        my_chart = MyChart(cdk8s.App(), "MyChart", bucket=bucket)
+        deployment = Deployment(cdk8s.App(), "MyChart", bucket=bucket)
 
         # add the cdk8s chart to the cluster
-        self.cluster.add_cdk8s_chart("my-chart", my_chart)
+        self.cluster.add_cdk8s_chart("my-chart", deployment)
