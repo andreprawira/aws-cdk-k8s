@@ -3,5 +3,5 @@ constructs>=10.0.0
 aws-cdk.lambda-layer-kubectl-v31
 dacite
 pyyaml
-cdk8s>=2.0.0
+cdk8s>=2.66.2
 cdk8s-plus-31>=2.0.0

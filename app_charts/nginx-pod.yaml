@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: yamlpod
+spec:
+  containers:
+  - name: yamlpod
+    image: nginx:latest
+    ports:
+    - containerPort: 80

@@ -15,7 +15,7 @@
     ]
   },
   "context": {
-    "@aws-cdk/core:bootstrapQualifier": "perfecta24",
+    "@aws-cdk/core:bootstrapQualifier": "k8s",
     "deployment-account-id":"123456789012",
     "deployment-account-region": "us-east-1",
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,

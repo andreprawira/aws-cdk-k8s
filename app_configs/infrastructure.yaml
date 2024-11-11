@@ -6,5 +6,5 @@ globals:
     created_by: me
 
 accounts:
-  - account_name: nonprod
+  - account_name: area51
     region: us-east-1
