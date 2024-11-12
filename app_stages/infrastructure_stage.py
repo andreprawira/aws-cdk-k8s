@@ -3,7 +3,8 @@ from aws_cdk import Stage
 from constructs import Construct
 from app_stacks.argocd_stack import ArgoCDStack, ArgoCDStackProps
 from app_stacks.eks_stack import EKSStack,EKSStackProps
-from app_stacks.manifests_stack import ManifestsStack, ManifestsStackProps
+from app_stacks.ingress_controller_stack import IngressControllerStack, IngressControllerStackProps
+from app_stacks.ui_stack import UiStack, UiStackProps
 
 
 @dataclass
@@ -40,10 +41,10 @@ class InfrastructureStage(Stage):
             ),
         )
 
-        manifests_stack = ManifestsStack(
+        ingress_controller_stack = IngressControllerStack(
             self,
-            "manifests-stack",
-            props=ManifestsStackProps(
+            "ingress-controller-stack",
+            props=IngressControllerStackProps(
                 account_name=props.account_name,
                 account_id=props.account_id,
                 general_tags=props.general_tags,
@@ -51,4 +52,13 @@ class InfrastructureStage(Stage):
             ),
         )
 
-        manifests_stack.add_dependency(argocd_stack)
+        ui_stack = UiStack(
+            self,
+            "manifests-stack",
+            props=UiStackProps(
+                account_name=props.account_name,
+                account_id=props.account_id,
+                general_tags=props.general_tags,
+                cluster=eks_stack.EKSCluster
+            ),
+        )

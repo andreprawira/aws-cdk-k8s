@@ -1,5 +1,5 @@
 
-# Deploying AWS EKS and its manifests using CDK and CDK8S
+# Deploying AWS EKS and ArgoCD with AWS CDK!
 
 ## Prerequisites
 
