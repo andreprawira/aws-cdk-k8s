@@ -211,6 +211,10 @@ class EKSStack(Stack):
         manifest_path = os.path.join(os.path.dirname(__file__), "../app_charts/nginx-pod.yaml")
         self.cluster.add_manifest("nginx-pod", *self.read_yaml_file(manifest_path))
 
+        # Apply Nginx pod manifest from YAML file
+        manifest_path = os.path.join(os.path.dirname(__file__), "../app_charts/argo-cd/test.yaml")
+        self.cluster.add_manifest("argo-cd", *self.read_yaml_file(manifest_path))
+
         # # Apply Argo CD manifest from YAML file
         # argocd_manifest_path = os.path.join(os.path.dirname(__file__), "../app_charts/argo-cd/Chart.yaml")
         # self.cluster.add_manifest("argocd", *self.read_yaml_file(argocd_manifest_path))
