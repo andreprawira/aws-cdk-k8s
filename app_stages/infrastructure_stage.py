@@ -52,9 +52,11 @@ class InfrastructureStage(Stage):
             ),
         )
 
+        ingress_controller_stack.node.add_dependency(argocd_stack)
+
         ui_stack = UiStack(
             self,
-            "manifests-stack",
+            "ui-stack",
             props=UiStackProps(
                 account_name=props.account_name,
                 account_id=props.account_id,
@@ -62,3 +64,5 @@ class InfrastructureStage(Stage):
                 cluster=eks_stack.EKSCluster
             ),
         )
+
+        ui_stack.node.add_dependency(ingress_controller_stack)
