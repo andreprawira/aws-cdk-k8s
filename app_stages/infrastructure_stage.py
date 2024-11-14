@@ -4,8 +4,9 @@ from constructs import Construct
 from app_stacks.argocd_stack import ArgoCDStack, ArgoCDStackProps
 from app_stacks.eks_stack import EKSStack,EKSStackProps
 from app_stacks.ingress_controller_stack import IngressControllerStack, IngressControllerStackProps
-from app_stacks.ignore2 import ComponentsStack, ComponentsStackProps
+from app_stacks.ignore import ComponentsStack, ComponentsStackProps
 from app_stacks.karpenter_stack import KarpenterStack, KarpenterStackProps
+from app_stacks.prometheus_stack import PrometheusStack, PrometheusStackProps
 
 
 @dataclass
@@ -44,6 +45,17 @@ class InfrastructureStage(Stage):
 
         karpenter_stack.add_dependency(eks_stack)
 
+        prometheus_stack = PrometheusStack(
+            self,
+            "prometheus-stack",
+            props=PrometheusStackProps(
+                account_name=props.account_name,
+                account_id=props.account_id,
+                general_tags=props.general_tags,
+                cluster=eks_stack.EKSCluster
+            ),
+        )
+
         argocd_stack = ArgoCDStack(
             self,
             "argocd-stack",
@@ -57,16 +69,16 @@ class InfrastructureStage(Stage):
 
         argocd_stack.add_dependency(eks_stack)
 
-        components_stack = ComponentsStack(
-            self,
-            "components-stack",
-            props=ComponentsStackProps(
-                account_name=props.account_name,
-                account_id=props.account_id,
-                general_tags=props.general_tags,
-                cluster=eks_stack.EKSCluster
-            ),
-        )
+        # components_stack = ComponentsStack(
+        #     self,
+        #     "components-stack",
+        #     props=ComponentsStackProps(
+        #         account_name=props.account_name,
+        #         account_id=props.account_id,
+        #         general_tags=props.general_tags,
+        #         cluster=eks_stack.EKSCluster
+        #     ),
+        # )
 
         ingress_controller_stack = IngressControllerStack(
             self,

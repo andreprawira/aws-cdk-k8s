@@ -5,7 +5,8 @@ from aws_cdk import(
 import cdk8s as cdk8s
 from constructs import Construct
 from dataclasses import dataclass
-
+import os
+import yaml
 
 @dataclass
 class ArgoCDStackProps:
@@ -47,3 +48,15 @@ class ArgoCDStack(Stack):
             version="7.7.1",
         )
         chart.node.add_dependency(sa)
+
+        # Read the YAML file
+        yaml_path = os.path.join('chart', 'root-app', 'template', 'argo-cd.yaml')
+        with open(yaml_path, 'r') as file:
+            manifest_data = yaml.safe_load(file)
+
+        chart = eks.KubernetesManifest(
+            self,
+            'chart',
+            cluster=props.cluster,
+            manifest=[manifest_data]  # Note: manifest expects a list of manifests
+        )
