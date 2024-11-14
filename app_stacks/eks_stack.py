@@ -1,11 +1,14 @@
 from aws_cdk import(
+    Tags,
     aws_eks as eks,
     lambda_layer_kubectl_v31,
     Stack,
     aws_ec2 as ec2,
     aws_iam as iam,
+    aws_ssm as ssm,
 )
 import cdk8s as cdk8s
+import cdk_eks_karpenter
 from constructs import Construct
 from dataclasses import dataclass
 import os
@@ -44,7 +47,7 @@ class EKSStack(Stack):
             version=eks.KubernetesVersion.V1_31,
             kubectl_layer=lambda_layer_kubectl_v31.KubectlV31Layer(self, "kubectl"),
             cluster_name="eks-cluster",
-            masters_role=eks_role
+            masters_role=eks_role,
         )
 
         self.cluster.aws_auth.add_masters_role(
@@ -58,9 +61,8 @@ class EKSStack(Stack):
             nodegroup_name="cluster-default-node-group",
             instance_types=[ec2.InstanceType("t4g.medium")],
             min_size=2,
-            max_size=3
+            max_size=3,
         )
-
 
     @property
     def EKSCluster(self):

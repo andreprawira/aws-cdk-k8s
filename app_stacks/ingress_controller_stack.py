@@ -26,13 +26,16 @@ class IngressControllerStack(Stack):
 
         eks.HelmChart(
             self,
-            'ingress-controller-chart',
+            'alb-controller-chart',
             cluster=props.cluster,
             chart='aws-load-balancer-controller',
             repository='https://aws.github.io/eks-charts',
             namespace='kube-system',
             values={
-                "clusterName": "eks-cluster"
+                "clusterName": "eks-cluster",
+                "serviceAccount": {
+                     "name": "aws-load-balancer-controller-sa"
+                }
             }
         )
 

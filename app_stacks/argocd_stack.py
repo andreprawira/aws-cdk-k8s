@@ -21,7 +21,7 @@ class ArgoCDStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, tags=props.general_tags, **kwargs)
 
-        namespace = props.cluster.add_manifest(
+        argocd_namespace = props.cluster.add_manifest(
             "argocd",
             {
                 "apiVersion": "v1",
@@ -35,7 +35,7 @@ class ArgoCDStack(Stack):
             name="argocd-repo-server",
             namespace="argocd",
         )
-        sa.node.add_dependency(namespace)
+        sa.node.add_dependency(argocd_namespace)
 
         chart = eks.HelmChart(
             self,
