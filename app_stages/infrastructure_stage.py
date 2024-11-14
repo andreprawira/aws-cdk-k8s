@@ -4,7 +4,7 @@ from constructs import Construct
 from app_stacks.argocd_stack import ArgoCDStack, ArgoCDStackProps
 from app_stacks.eks_stack import EKSStack,EKSStackProps
 from app_stacks.ingress_controller_stack import IngressControllerStack, IngressControllerStackProps
-from app_stacks.ignore import ComponentsStack, ComponentsStackProps
+# from app_stacks.ignore import ComponentsStack, ComponentsStackProps
 from app_stacks.karpenter_stack import KarpenterStack, KarpenterStackProps
 from app_stacks.prometheus_stack import PrometheusStack, PrometheusStackProps
 
@@ -91,4 +91,4 @@ class InfrastructureStage(Stage):
             ),
         )
 
-        ingress_controller_stack.node.add_dependency(components_stack)
+        # ingress_controller_stack.node.add_dependency(components_stack)
