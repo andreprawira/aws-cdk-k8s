@@ -8,7 +8,6 @@ from aws_cdk import(
     aws_ssm as ssm,
 )
 import cdk8s as cdk8s
-import cdk_eks_karpenter
 from constructs import Construct
 from dataclasses import dataclass
 import os

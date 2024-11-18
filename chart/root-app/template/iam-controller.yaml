@@ -1,0 +1,18 @@
+- name: Install IAM controller
+      run: |
+        aws ecr-public get-login-password --region ${{ inputs.region }} | helm registry login --username AWS --password-stdin public.ecr.aws
+        kubectl get namespace ack-system || kubectl create namespace ack-system
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/v1.3.12/config/crd/bases/iam.services.k8s.aws_groups.yaml
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/refs/tags/v1.3.12/config/crd/bases/iam.services.k8s.aws_instanceprofiles.yaml
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/refs/tags/v1.3.12/config/crd/bases/iam.services.k8s.aws_openidconnectproviders.yaml
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/refs/tags/v1.3.12/config/crd/bases/iam.services.k8s.aws_policies.yaml
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/refs/tags/v1.3.12/config/crd/bases/iam.services.k8s.aws_roles.yaml
+        kubectl apply -f https://raw.githubusercontent.com/aws-controllers-k8s/iam-controller/refs/tags/v1.3.12/config/crd/bases/iam.services.k8s.aws_users.yaml
+        helm template ack-iam-controller oci://public.ecr.aws/aws-controllers-k8s/iam-chart \
+        --version 1.3.12 \
+        --namespace ack-system \
+        --set aws.region=${{ inputs.region }} \
+        --set aws.account=${{ vars.AWS_ACCOUNT_ID }} | kubectl apply -f -
+        aws eks create-pod-identity-association --cluster-name ${{ inputs.env }}-${{ inputs.region }}-${{ inputs.color }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/ack-iam-controller-${{ inputs.env }}-${{ inputs.region }}-${{ inputs.color }} --namespace ack-system --service-account ack-iam-controller || true
+        kubectl rollout restart deployment -n ack-system ack-iam-controller-iam-chart
+        kubectl rollout status deployment -n ack-system ack-iam-controller-iam-chart

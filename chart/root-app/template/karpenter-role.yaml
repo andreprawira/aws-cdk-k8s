@@ -1,0 +1,109 @@
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: karpenter-role-$CLUSTER_NAME
+  namespace: $KARPENTER_NAMESPACE
+spec:
+  name: karpenter-role-$CLUSTER_NAME
+  description: "Role for Karpenter to manage EC2, AutoScaling, and EKS resources"
+  assumeRolePolicyDocument: |
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowEksAuthToAssumeRoleForPodIdentity",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "pods.eks.amazonaws.com"
+            },
+            "Action": [
+                "sts:AssumeRole",
+                "sts:TagSession"
+            ]
+        }
+      ]
+    }
+  inlinePolicies:
+    karpenterPolicy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ec2:DescribeLaunchTemplates",
+              "ec2:RunInstances",
+              "ec2:TerminateInstances",
+              "ec2:DescribeInstances",
+              "ec2:CreateTags",
+              "ec2:DeleteTags",
+              "ec2:DescribeInstanceTypes",
+              "ec2:DescribeSecurityGroups",
+              "ec2:DescribeSubnets",
+              "ec2:DescribeVpcs",
+              "ec2:DescribeSpotPriceHistory",
+              "ec2:DescribeImages",
+              "ec2:DescribeInstanceStatus",
+              "ec2:DescribeInstanceTypeOfferings",
+              "ec2:CreateLaunchTemplate",
+              "ec2:CreateFleet",
+              "eks:DescribeCluster"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "autoscaling:CreateOrUpdateTags",
+              "autoscaling:DescribeAutoScalingGroups",
+              "autoscaling:DescribeAutoScalingInstances",
+              "autoscaling:UpdateAutoScalingGroup",
+              "autoscaling:TerminateInstanceInAutoScalingGroup"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ec2:CreateVolume",
+              "ec2:AttachVolume",
+              "ec2:DeleteVolume",
+              "ec2:ModifyVolume",
+              "ec2:DescribeVolumes",
+              "ec2:DescribeVolumeStatus"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "elasticloadbalancing:DescribeLoadBalancers",
+              "elasticloadbalancing:DescribeTargetGroups",
+              "elasticloadbalancing:RegisterTargets"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:GetParameter",
+              "ssm:GetParameters"
+            ],
+            "Resource": "arn:aws:ssm:*:*:parameter/*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ec2:DescribeAvailabilityZones",
+              "ec2:DescribeInstanceStatus",
+              "ec2:DescribeInstances",
+              "ssm:DescribeParameters",
+              "pricing:GetProducts",
+              "iam:PassRole",
+              "ec2:DeleteLaunchTemplate"
+
+            ],
+            "Resource": "*"
+          }
+        ]
+      }

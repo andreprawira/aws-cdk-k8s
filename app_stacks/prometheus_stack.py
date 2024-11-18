@@ -21,24 +21,23 @@ class PrometheusStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, tags=props.general_tags, **kwargs)
 
-        # Read the YAML file
-        yaml_path = os.path.join('chart', 'root-app', 'template', 'prometheus.yaml')
-        with open(yaml_path, 'r') as file:
-            manifest_data = yaml.safe_load(file)
+        # # Read the YAML file
+        # yaml_path = os.path.join('chart', 'root-app', 'template', 'prometheus.yaml')
+        # with open(yaml_path, 'r') as file:
+        #     manifest_data = yaml.safe_load(file)
 
-        chart = eks.KubernetesManifest(
-            self,
-            'chart',
-            cluster=props.cluster,
-            manifest=[manifest_data]  # Note: manifest expects a list of manifests
-        )
-
-        # # Deploy Prometheus Helm Chart with enhanced configuration
-        # chart = eks.HelmChart(
+        # chart = eks.KubernetesManifest(
         #     self,
-        #     "prometheus-helm-chart",
+        #     'chart',
         #     cluster=props.cluster,
-        #     chart="prometheus",
-        #     repository="https://prometheus-community.github.io/helm-charts",
-        #     chart_asset="prometheus"
+        #     manifest=[manifest_data]  # Note: manifest expects a list of manifests
         # )
+
+        # Deploy Prometheus Helm Chart with enhanced configuration
+        chart = eks.HelmChart(
+            self,
+            "prometheus-helm-chart",
+            cluster=props.cluster,
+            chart="prometheus",
+            repository="https://prometheus-community.github.io/helm-charts",
+        )

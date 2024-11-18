@@ -1,0 +1,66 @@
+ - name: Install Karpenter
+      run: |
+        export CLUSTER_NAME=${{ inputs.env }}-${{ inputs.region }}-${{ inputs.color }}
+        export KARPENTER_NAMESPACE=karpenter
+        export CLUSTER_ENDPOINT=$(aws eks describe-cluster --name $CLUSTER_NAME --query "cluster.endpoint" --output text)
+        export INSTANCE_PROFILE=$(aws ec2 describe-instances --filters "Name=tag:aws:eks:cluster-name,Values=${CLUSTER_NAME}" --query "Reservations[0].Instances[0].IamInstanceProfile.Arn" --output text | sed 's|.*/||')
+        export AMD_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami/1.29/amazon-linux-2/recommended/image_id --query Parameter.Value --output text)"
+        kubectl get namespace karpenter || kubectl create namespace karpenter
+        cat iam_policies/karpenter_iam_role.yaml | envsubst | kubectl apply -f -
+        helm registry logout public.ecr.aws || true
+        helm template karpenter-crd oci://public.ecr.aws/karpenter/karpenter-crd --namespace karpenter | kubectl apply -f -
+        helm template karpenter oci://public.ecr.aws/karpenter/karpenter --version 1.0.6 \
+          --namespace karpenter \
+          --set settings.clusterName=${CLUSTER_NAME} \
+          --set settings.aws.clusterEndpoint=${CLUSTER_ENDPOINT} > karpenter.yaml
+        kubectl apply -f karpenter.yaml
+        kubectl rollout restart deployment -n karpenter karpenter
+        kubectl rollout status deployment -n karpenter karpenter
+        aws eks create-pod-identity-association --cluster-name ${CLUSTER_NAME} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/karpenter-role-${CLUSTER_NAME} --namespace karpenter --service-account karpenter || true
+        cat <<EOF | envsubst | kubectl apply -f -
+        apiVersion: karpenter.k8s.aws/v1
+        kind: EC2NodeClass
+        metadata:
+          name: default
+        spec:
+          subnetSelectorTerms:
+            - tags:
+                karpenter.sh/discovery: $CLUSTER_NAME
+          securityGroupSelectorTerms:
+            - tags:
+                karpenter.sh/discovery: $CLUSTER_NAME
+          amiSelectorTerms:
+            - id: $AMD_AMI_ID
+          amiFamily: AL2
+          instanceProfile: $INSTANCE_PROFILE
+        EOF
+        cat <<EOF | kubectl apply -f -
+        apiVersion: karpenter.sh/v1
+        kind: NodePool
+        metadata:
+          name: default
+        spec:
+          template:
+            spec:
+              requirements:
+                - key: "karpenter.k8s.aws/instance-category"
+                  operator: In
+                  values: ["c", "m", "r", "t", "a", "i", "x"]
+                - key: "karpenter.k8s.aws/instance-cpu"
+                  operator: In
+                  values: ["4", "8", "16", "32"]
+                - key: "karpenter.sh/capacity-type"
+                  operator: In
+                  values: ["on-demand"]
+              nodeClassRef:
+                group: karpenter.k8s.aws
+                kind: EC2NodeClass
+                name: default
+              expireAfter: 720h # 30 * 24h = 720h
+          limits:
+            cpu: "3000"
+            memory: 3000Gi
+          disruption:
+            consolidationPolicy: WhenEmptyOrUnderutilized
+            consolidateAfter: 1m
+        EOF
